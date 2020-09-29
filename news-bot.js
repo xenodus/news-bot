@@ -22,7 +22,7 @@ const Parser = require('rss-parser');
 const parser = new Parser({
   customFields: {
     feed: [],
-    item: ['media:group'],
+    item: ['media:group', 'media:content'],
   }
 });
 
@@ -206,6 +206,21 @@ client.on("message", async function(message) {
         message.author.send(helpTxt);
         break;
 
+      /*
+      case 'debug':
+        if( args[1] ) {
+          let feed = await parser.parseURL( args[1] );
+          console.log(feed);
+        }
+        else {
+          let url = 'https://www.wowhead.com/news/rss/all';
+          let feed = await parser.parseURL( url );
+          console.log(feed.items[0]['media:content']['$']['medium']);
+        }
+
+        break;
+      */
+
       case 'donate':
         let donationTitle = "```md\n# Donation Link```" + "```md\n# If you've found the bot useful and would like to donate, you can do so via the link below. Donations will be used to cover server hosting fees. Thanks!```";
 
@@ -266,6 +281,11 @@ async function post2channel(feed, channel, reverse=false) {
             if( images.length > 0 ) {
               embed.setThumbnail( images[0] );
             }
+            else {
+              if( item.image && item.image.url ) {
+                embed.setThumbnail( item.image.url );
+              }
+            }
 
             if( 'contentSnippet' in item ) {
 
@@ -287,12 +307,21 @@ async function post2channel(feed, channel, reverse=false) {
             if( 'pubDate' in item )
               embed.setFooter( "🗞️" + moment(item.pubDate).format('D MMM YYYY h:mm A') );
 
+            // Wowhead Overwrites
+            if( item["media:content"] ) {
+              if( item["media:content"] && item["media:content"]['$'] && item["media:content"]['$']['medium'] ) {
+                if( item["media:content"]['$']['medium'] == 'image' && item["media:content"]['$']['url'] ) {
+                  embed.setThumbnail( item["media:content"]['$']['url'] );
+                }
+              }
+            }
+
             // YouTube Overwrites
-            if( feed.items[j]["media:group"] ) {
+            if( item["media:group"] ) {
 
               // Title
-              if( feed.items[j]["media:group"]["media:title"] && feed.items[j]["media:group"]["media:title"].length > 0 ) {
-                let youtubeTitle =  feed.items[j]["media:group"]["media:title"][0];
+              if( item["media:group"]["media:title"] && item["media:group"]["media:title"].length > 0 ) {
+                let youtubeTitle =  item["media:group"]["media:title"][0];
 
                 if( youtubeTitle.length >= 252 )
                   youtubeTitle = youtubeTitle.substr(0, 252) + "...";
@@ -301,15 +330,15 @@ async function post2channel(feed, channel, reverse=false) {
               }
 
               // Img
-              if( feed.items[j]["media:group"]["media:thumbnail"] && feed.items[j]["media:group"]["media:title"].length > 0 ) {
-                if( feed.items[j]["media:group"]["media:thumbnail"][0]["$"]["url"] ) {
-                  embed.setThumbnail( feed.items[j]["media:group"]["media:thumbnail"][0]["$"]["url"] );
+              if( item["media:group"]["media:thumbnail"] && item["media:group"]["media:title"].length > 0 ) {
+                if( item["media:group"]["media:thumbnail"][0]["$"]["url"] ) {
+                  embed.setThumbnail( item["media:group"]["media:thumbnail"][0]["$"]["url"] );
                 }
               }
 
               // Description
-              if( feed.items[j]["media:group"]["media:description"] && feed.items[j]["media:group"]["media:description"].length > 0 ) {
-                let youtubeDescription = feed.items[j]["media:group"]["media:description"][0];
+              if( item["media:group"]["media:description"] && item["media:group"]["media:description"].length > 0 ) {
+                let youtubeDescription = item["media:group"]["media:description"][0];
 
                 if( youtubeDescription.length > 256 )
                   youtubeDescription = youtubeDescription.substr(0, 256) + "...";
