@@ -11,7 +11,11 @@ const config = require('./config').production;
 const pool = config.getPool();
 const moment = require("moment");
 const Discord = require("discord.js");
-const client = new Discord.Client();
+const client = new Discord.Client({
+  messageCacheMaxSize: 0, // No caching of messages
+  messageCacheLifetime: 1800,
+  messageSweepInterval: 3600
+});
 const helper = require("./helper.js");
 
 const axios = require('axios');
