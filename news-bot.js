@@ -9,6 +9,8 @@ const config = require('./config').production;
 *******************************/
 
 const pool = config.getPool();
+const readPool = config.getReadPool();
+
 const moment = require("moment");
 const Discord = require("discord.js");
 const client = new Discord.Client({
@@ -176,7 +178,7 @@ client.on("message", async function(message) {
 
       case 'ls':
       case 'list':
-        pool.query("SELECT * FROM news_feed WHERE channel_id = ?", [message.channel.id])
+        readPool.query("SELECT * FROM news_feed WHERE channel_id = ?", [message.channel.id])
         .then(function(results){
           if( results.length > 0 ) {
             helper.sendInfoMsg("Info", "The rss feed setup for this channel is `" +results[0].url+"`", "info", message);
@@ -188,7 +190,7 @@ client.on("message", async function(message) {
 
       case 'fetch':
       case 'check':
-        pool.query("SELECT * FROM news_feed WHERE channel_id = ?", [message.channel.id])
+        readPool.query("SELECT * FROM news_feed WHERE channel_id = ?", [message.channel.id])
         .then(async function(results){
           if( results.length > 0 ) {
             let feed = await parser.parseURL( results[0].url );
@@ -266,7 +268,7 @@ async function post2channel(feed, channel, reverse=false) {
       if( guid && feed.items[j][guid] ) {
 
         // check if already posted
-        await pool.query("SELECT * FROM news_feed_posted WHERE channel_id = ? AND guid = ?", [channel.id, feed.items[j][guid]])
+        await readPool.query("SELECT * FROM news_feed_posted WHERE channel_id = ? AND guid = ?", [channel.id, feed.items[j][guid]])
         .then(function(results){
           if( results.length == 0 ) {
 
@@ -385,7 +387,7 @@ async function checkNews(client) {
         helper.printStatus("Checking news_feed for server " + guild.name);
         helper.printStatus("================================================");
 
-        await pool.query("SELECT * FROM news_feed WHERE server_id = ?", [guild.id]).then(async function(news_feed_results){
+        await readPool.query("SELECT * FROM news_feed WHERE server_id = ?", [guild.id]).then(async function(news_feed_results){
 
           if( news_feed_results.length > 0 ) {
 
