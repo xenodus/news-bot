@@ -8,6 +8,9 @@ const config = require('./config').production;
   Variables & Libs
 *******************************/
 
+const { setIntervalAsync } = require('set-interval-async/dynamic')
+const { clearIntervalAsync } = require('set-interval-async')
+
 const pool = config.getPool();
 const readPool = config.getReadPool();
 
@@ -379,7 +382,7 @@ function getAttrFromString(str, node, attr) {
 
 async function checkNews(client) {
   if( client.guilds.cache.size > 0 ) {
-    for( var guild of client.guilds.cache.values() ) {
+    for await ( var guild of client.guilds.cache.values() ) {
       if( guild.available ) {
 
         helper.printStatus("");

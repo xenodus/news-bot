@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/xenodus/news-bot#readme",
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "bufferutil": "^4.0.1",
     "discord.js": "^12.3.1",
     "erlpack": "github:discord/erlpack",
@@ -26,6 +26,7 @@
     "moment": "^2.29.0",
     "promise-mysql": "^3.3.2",
     "rss-parser": "^3.9.0",
+    "set-interval-async": "^2.0.3",
     "sodium": "^3.0.2",
     "utf-8-validate": "^5.0.2",
     "zlib-sync": "^0.1.7"
